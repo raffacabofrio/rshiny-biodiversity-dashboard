@@ -40,6 +40,7 @@ aboutPage <- function(id, label = "About") {
              p("I chose googleVis among other plot options because it was the friendliest to use. Especially when drawing a country it accepts the CountryCode, while the plotly for example I would need to have the coordinates and zoom rate for each country. But I still used ploty for the line graph because it is more interactive."),
              p("Finally I developed some skills in docker and aws to publish the app. I usually ask the cloud team to take care of this part. But I thought it would be cool to demonstrate this initiative here."),
              p("Thanks for the opportunity. I had a lot of fun developing this app. Hope you like it."),
+             icon("thumbs-up")
              
       ),
       column(2),

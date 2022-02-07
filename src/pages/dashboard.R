@@ -67,7 +67,7 @@ dashboardServer <- function(id) {
       ocurrencesByLocality <<- dbQuery.GetOcurrencesByLocality(country_id, specie_id)
       ocurrencesByLocality$LatLong <- paste(ocurrencesByLocality$latitudedecimal, ocurrencesByLocality$longitudeDecimal, sep=":")
       
-      currentRegion <- countries[countries$id == country_id,]$countrycode
+      currentRegion <- COUNTRIES[COUNTRIES$id == country_id,]$countrycode
       
       # force empty map if no occurrence found
       if(nrow(ocurrencesByLocality) == 0){

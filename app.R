@@ -1,10 +1,12 @@
 library(shiny)
 library(shinythemes)
+library(shinyjs)
 library(DBI)
 library(RPostgres)
 library(googleVis)
 library(plotly)
 library("rvest")
+
 
 # ----------------------------------------------
 # FUNCTIONS
@@ -29,10 +31,10 @@ SPECIES   <<- dbQuery.GetSpecies()
 
 # ----------------------------------------------
 # USER INTERFACE
-ui = navbarPage( "Biodiversity app", theme = shinytheme("darkly"), 
+ui = navbarPage( "Biodiversity app", theme = shinytheme("darkly"), useShinyjs(),
   
   tabPanel("Dashboard", dashboardPage("dashboardPage", "Dashboard page")),
-  tabPanel("About", aboutPage("aboutPage", "About page"))
+  tabPanel("About",     aboutPage("aboutPage",         "About page"))
   
 )
 
@@ -41,6 +43,7 @@ ui = navbarPage( "Biodiversity app", theme = shinytheme("darkly"),
 server = function(input, output, session) {
   
   dashboardServer("dashboardPage")
+  aboutServer("aboutPage")
 }
 
 # ----------------------------------------------

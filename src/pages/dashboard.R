@@ -22,16 +22,27 @@ dashboardPage <- function(id, label = "Dashboard") {
     mainPanel(
       
       # not ready
-      conditionalPanel( condition = "$(\"#dashboardPage-country_select\").val() == \"\" || $(\"#dashboardPage-specie_select\").val() == \"\"" , h1("Please select country and specie.", br(), icon("arrow-left"))),
+      conditionalPanel( condition = "$(\"#dashboardPage-TextState\").text() == \"NOT_READY\"" , h1("Please select country and specie.", br(), icon("arrow-left"))),
       
       # ready
-      conditionalPanel(condition = "$(\"#dashboardPage-country_select\").val() != \"\" && $(\"#dashboardPage-specie_select\").val() != \"\"" ,
+      conditionalPanel(condition = "$(\"#dashboardPage-TextState\").text() == \"READY\"" ,
          h3("Location plot"),                  
          htmlOutput(ns("locationView")),
          br(),
          h3("Timeline plot"), 
          plotlyOutput(ns("dateView")),
-      )
+      ),
+      
+      # not found
+      conditionalPanel(condition = "$(\"#dashboardPage-TextState\").text() == \"NOT_FOUND\"" ,
+          h1("Sorry, no data found for selected country and specie. :/"),
+          p("Suggestion of good sampling for this country. Try searching by then:"),
+          tags$ul(
+            uiOutput(ns('suggestionList'))
+          )
+      ),
+      
+      span(textOutput(ns("TextState")), style="color:#222222")
     )
     
     
@@ -43,6 +54,10 @@ dashboardPage <- function(id, label = "Dashboard") {
 dashboardServer <- function(id) {
   
   moduleServer(id, function(input, output, session) {
+    
+    # page states
+    # NOT_READY, READY, NOT_FOUND
+    pageState <- reactiveVal('NOT_READY')
   
     # countries selectbox load
     countriesNamed <- as.named(COUNTRIES, "id", "country")
@@ -67,12 +82,13 @@ dashboardServer <- function(id) {
       ocurrencesByLocality <<- dbQuery.GetOcurrencesByLocality(country_id, specie_id)
       ocurrencesByLocality$LatLong <- paste(ocurrencesByLocality$latitudedecimal, ocurrencesByLocality$longitudeDecimal, sep=":")
       
-      currentRegion <- COUNTRIES[COUNTRIES$id == country_id,]$countrycode
-      
-      # force empty map if no occurrence found
-      if(nrow(ocurrencesByLocality) == 0){
-        ocurrencesByLocality[1,] = c(0, 0, 0, "0:0")
+      if(nrow(ocurrencesByLocality) == 0)
+      {
+        pageState('NOT_FOUND')
+        return()
       }
+      
+      currentRegion <- COUNTRIES[COUNTRIES$id == country_id,]$countrycode
       
       gvisGeoChart(ocurrencesByLocality, "LatLong",
                    colorvar="count", 
@@ -90,7 +106,14 @@ dashboardServer <- function(id) {
         return()
       }
       
-      ocurrencesBydate <<- dbQuery.GetOcurrencesByDate(country_id, specie_id)
+      ocurrencesBydate <- dbQuery.GetOcurrencesByDate(country_id, specie_id)
+      
+      if(nrow(ocurrencesBydate) == 0)
+      {
+        pageState('NOT_FOUND')
+        return()
+      }
+
       plot_ly(ocurrencesBydate, x = ~eventDate, y = ~count, type = 'scatter', mode = 'lines+markers')
       
     })
@@ -109,6 +132,36 @@ dashboardServer <- function(id) {
       src <- getImageUrl(specieScientifcName)
       
       img(src=src, width="100%")
+    })
+    
+    # READY STATE
+    observe({
+
+      country_id <- input$country_select
+      specie_id  <- input$specie_select
+      
+      if(country_id != "" && specie_id != ""){
+        pageState('READY')
+      }
+      
+    })
+    
+    # NOT FOUND STATE - suggestion list
+    output$suggestionList <- renderUI({
+      
+      country_id <- input$country_select
+      
+      if(pageState() == "NOT_FOUND" && country_id != "")
+      {
+        suggestions <- dbQuery.GetSuggestedSpecies(country_id)
+        apply(suggestions, 1, function(s) tags$li(s['scientificname']))
+      }
+    })
+    
+    # PAGE STATE HELPER
+    output$TextState <- renderText({ 
+      req(pageState())
+      pageState()
     })
   
   })

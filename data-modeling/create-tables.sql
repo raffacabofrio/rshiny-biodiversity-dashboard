@@ -126,7 +126,10 @@ CREATE INDEX "country_specie_localitie_IDX"
     (country_id ASC NULLS LAST, specie_id ASC NULLS LAST)
     TABLESPACE pg_default;
 
-
+CREATE INDEX "country_specie_localitie_IDX2"
+    ON public.ocurrences_by_locality USING btree
+    (country_id ASC NULLS LAST)
+    TABLESPACE pg_default;
 
 
 -- --------------------------------------------------------------

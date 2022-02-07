@@ -49,6 +49,23 @@ dbQuery.GetOcurrencesByDate <- function(idCountry, idEspecie) {
   return( dbQuery(sql) )
 }
 
+dbQuery.GetSuggestedSpecies <- function(idCountry) {
+  
+  idCountry <- dbQuery.Escape(idCountry)
+  
+  sql <- paste("select s.id, s.scientificname, count(\"count\") as total 
+                from 
+                	ocurrences_by_locality o INNER JOIN species s
+                	on o.specie_id = s.id
+                where country_id = ", idCountry, "
+                group by s.id, s.scientificname
+                order by total desc
+                limit 5")
+  
+  return( dbQuery(sql) )
+  
+}
+
 dbQuery.Escape <- function(param) {
   
   return( gsub("'","''",param) )

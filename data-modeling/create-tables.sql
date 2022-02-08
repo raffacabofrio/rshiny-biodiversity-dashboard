@@ -42,8 +42,13 @@ CREATE TABLE public.ocurrences
     modified date
 );
 
+-- Use COPY command to load csv
+-- 4 hrs
+
 -- --------------------------------------------------------------
 -- COUNTRIES
+
+drop table countries;
 
 CREATE TABLE public.countries
 (
@@ -55,11 +60,14 @@ CREATE TABLE public.countries
 );
 
 insert into countries (continent, country, countryCode)
-select distinct continent, country, countryCode from ocurrences_100k
+select distinct continent, country, countryCode from ocurrences;
+-- 36 min
 
 
 -- --------------------------------------------------------------
 -- SPECIES
+
+drop table species;
 
 CREATE TABLE public.species
 (
@@ -73,27 +81,29 @@ CREATE TABLE public.species
 );
 
 insert into species (scientificName, taxonRank, kingdom, family, higherClassification, vernacularName)
-select distinct scientificName, taxonRank, kingdom, family, higherClassification, vernacularName from ocurrences_100k
+select distinct scientificName, taxonRank, kingdom, family, higherClassification, vernacularName from ocurrences
+-- 58 min
 
 -- --------------------------------------------------------------
 -- NORMALIZING DATA
 
-ALTER TABLE IF EXISTS public.ocurrences_100k
+ALTER TABLE IF EXISTS ocurrences
     ADD COLUMN country_id integer;
 
-ALTER TABLE IF EXISTS public.ocurrences_100k
+ALTER TABLE IF EXISTS ocurrences
     ADD COLUMN specie_id integer;
 
-UPDATE ocurrences_100k o
+UPDATE ocurrences o
 	SET country_id = c.id
 FROM countries c
-where o.countryCode = c.countryCode
+where o.countryCode = c.countryCode;
+-- 2 hr
 
-UPDATE ocurrences_100k o
+UPDATE ocurrences o
 	SET specie_id = s.id
 FROM species s
-where o.scientificname = s.scientificname
-
+where o.scientificname = s.scientificname;
+-- 4.5 hr
 
 -- --------------------------------------------------------------
 -- OCURRENCES BY LOCALITY
@@ -118,8 +128,9 @@ select
 	ROUND(ROUND("longitudeDecimal"::numeric * 2, 1) /2, 2) as "longitudeDecimal2",
 	ROUND(latitudeDecimal::numeric, 1) as latitudeDecimal2,
 	SUM("individualCount") as "individualCount"
-from ocurrences_100k
+from ocurrences
 group by country_id, specie_id, "longitudeDecimal2", latitudeDecimal2
+-- 1 hr
 
 CREATE INDEX "country_specie_localitie_IDX"
     ON public.ocurrences_by_locality USING btree
@@ -152,8 +163,9 @@ select
 	specie_id,
 	TO_CHAR("eventDate", 'yyyy-mm-01')::date as "eventDate2",
 	SUM("individualCount") 
-from ocurrences_100k 
+from ocurrences 
 group by country_id, specie_id, "eventDate2"
+-- 1 hr
 
 CREATE INDEX "country_specie_IDX"
     ON public.ocurrences_by_date USING btree

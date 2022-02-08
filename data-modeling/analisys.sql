@@ -1,9 +1,8 @@
-select * from countries where id = 48  order by country
--- 16 -- brazil
--- in (48, 50, 24) top3
+select count(*) from countries
+-- 224 ok
 
-select * from ocurrences_100k where country_id = 16 -- brazil
-
+select count(*) from species
+-- 56k - may cause problens. :/
 
 -- TOP 3 COUNTRIES
 -- 48 - "The Netherlands" >> 95k
@@ -21,7 +20,9 @@ select specie_id, count(*) as total from ocurrences_100k
 group by specie_id
 order by total desc
 
+select * from countries where id = 16  order by country
 
+select * from ocurrences where country_id = 16 -- brazil
 
 
 

@@ -1,7 +1,13 @@
 dbQuery <- function( sql ) {
-  
-  # TODO SECURITY: get from OS env vars
-  con <- dbConnect(RPostgres::Postgres(), dbname = "dashboard", host="127.0.0.1", port=5432, user="postgres", password="goku123") 
+
+  # Connect to docker when localhost. 
+  dbname   <- dbQuery.GetConfig("POSTGRES_DBNAME", "dashboard")
+  host     <- dbQuery.GetConfig("POSTGRES_HOST", "127.0.0.1")
+  port     <- dbQuery.GetConfig("POSTGRES_PORT", "5432")
+  user     <- dbQuery.GetConfig("POSTGRES_USER", "postgres")
+  password <- dbQuery.GetConfig("POSTGRES_PASSWORD", "goku123")
+
+  con <- dbConnect(RPostgres::Postgres(), dbname = dbname, host=host, port=port, user=user, password=password) 
   result <- dbGetQuery(con, sql) 
   return(result)
   
@@ -70,4 +76,10 @@ dbQuery.Escape <- function(param) {
   
   return( gsub("'","''",param) )
   
+}
+
+dbQuery.GetConfig <- function(key, defaultValue) {
+  value <- Sys.getenv(key)
+  if(value == "") value = defaultValue
+  return(value)
 }

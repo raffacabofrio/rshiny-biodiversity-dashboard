@@ -2,6 +2,9 @@
 .Rhistory
 .Rapp.history
 
+# Environment file
+.Renviron
+
 # Session Data files
 .RData
 

@@ -10,6 +10,7 @@ library("rvest")
 
 # ----------------------------------------------
 # FUNCTIONS
+source("functions/getConfig.R")
 source("functions/dbQuery.R")
 source("functions/as.named.R")
 source("functions/getScientificName.R")
@@ -24,8 +25,9 @@ source("pages/about.R")
 # ----------------------------------------------
 # GLOBAL SCOPE FOR ALL SESSIONS
 # 
-COUNTRIES <<- dbQuery.GetCountries()
-SPECIES   <<- dbQuery.GetSpecies()
+CSV_DEMO_MODE <<- as.logical( GetConfig("CSV_DEMO_MODE", "FALSE") )
+COUNTRIES     <<- dbQuery.GetCountries()
+SPECIES       <<- dbQuery.GetSpecies()
 
 
 

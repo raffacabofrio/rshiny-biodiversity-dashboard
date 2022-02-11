@@ -1,11 +1,13 @@
 dbQuery <- function( sql ) {
+  
+  if(CSV_DEMO_MODE) return()
 
   # Connect to docker when localhost. 
-  dbname   <- dbQuery.GetConfig("POSTGRES_DBNAME", "dashboard")
-  host     <- dbQuery.GetConfig("POSTGRES_HOST", "127.0.0.1")
-  port     <- dbQuery.GetConfig("POSTGRES_PORT", "5432")
-  user     <- dbQuery.GetConfig("POSTGRES_USER", "postgres")
-  password <- dbQuery.GetConfig("POSTGRES_PASSWORD", "goku123")
+  dbname   <- getConfig("POSTGRES_DBNAME", "dashboard")
+  host     <- getConfig("POSTGRES_HOST", "127.0.0.1")
+  port     <- getConfig("POSTGRES_PORT", "5432")
+  user     <- getConfig("POSTGRES_USER", "postgres")
+  password <- getConfig("POSTGRES_PASSWORD", "goku123")
 
   con <- dbConnect(RPostgres::Postgres(), dbname = dbname, host=host, port=port, user=user, password=password) 
   result <- dbGetQuery(con, sql) 
@@ -14,10 +16,19 @@ dbQuery <- function( sql ) {
 }
 
 dbQuery.GetCountries <- function() {
-  return( dbQuery("select id, country, countryCode from countries order by country") )
+  
+  if(CSV_DEMO_MODE) return( read.csv(file = 'csv_mode/countries.csv') )
+  
+  result = dbQuery("select id, country, countryCode from countries order by country")
+  
+  # write.csv(result,"csv_mode/countries.csv", col.names = TRUE, row.names = FALSE)
+  
+  return( result )
 }
 
 dbQuery.GetSpecies <- function() {
+  
+  if(CSV_DEMO_MODE) return( read.csv(file = 'csv_mode/species.csv') )
   
   sql <- "select 
           	id, 
@@ -29,10 +40,21 @@ dbQuery.GetSpecies <- function() {
           from species 
           order by name"
   
-  return( dbQuery(sql) )
+  result <- dbQuery(sql)
+  # write.csv(result,"csv_mode/species.csv", col.names = TRUE, row.names = FALSE)
+  return( result )
+  
+  
+  
+  
 }
 
 dbQuery.GetOcurrencesByLocality <- function(idCountry, idEspecie) {
+  
+  if(CSV_DEMO_MODE){
+    csv_path <- paste("csv_mode/ocurrences_by_locality_", idCountry, "_", idEspecie, ".csv")
+    return( read.csv(file = csv_path) )
+  } 
   
   idCountry <- dbQuery.Escape(idCountry)
   idEspecie <- dbQuery.Escape(idEspecie)
@@ -40,10 +62,19 @@ dbQuery.GetOcurrencesByLocality <- function(idCountry, idEspecie) {
   sql <- paste("select \"longitudeDecimal\", latitudedecimal, count from ocurrences_by_locality
           where country_id = ", idCountry, " and specie_id = ", idEspecie)
   
-  return( dbQuery(sql) )
+  result <- dbQuery(sql)
+  
+  # csv_path <- paste("csv_mode/ocurrences_by_locality_", idCountry, "_", idEspecie, ".csv")
+  # write.csv(result, csv_path, col.names = TRUE, row.names = FALSE)
+  return( result )
 }
 
 dbQuery.GetOcurrencesByDate <- function(idCountry, idEspecie) {
+  
+  if(CSV_DEMO_MODE){
+    csv_path <- paste("csv_mode/ocurrences_by_date_", idCountry, "_", idEspecie, ".csv")
+    return( read.csv(file = csv_path) )
+  } 
   
   idCountry <- dbQuery.Escape(idCountry)
   idEspecie <- dbQuery.Escape(idEspecie)
@@ -52,10 +83,19 @@ dbQuery.GetOcurrencesByDate <- function(idCountry, idEspecie) {
           where country_id = ", idCountry, " and specie_id = ", idEspecie,
           "order by \"eventDate\"")
   
-  return( dbQuery(sql) )
+  result <- dbQuery(sql)
+  
+  # csv_path <- paste("csv_mode/ocurrences_by_date_", idCountry, "_", idEspecie, ".csv")
+  # write.csv(result, csv_path, col.names = TRUE, row.names = FALSE)
+  return( result )
 }
 
 dbQuery.GetSuggestedSpecies <- function(idCountry) {
+  
+  if(CSV_DEMO_MODE){
+    csv_path <- paste("csv_mode/suggestions_", idCountry, ".csv")
+    return( read.csv(file = csv_path) )
+  } 
   
   idCountry <- dbQuery.Escape(idCountry)
   
@@ -68,7 +108,11 @@ dbQuery.GetSuggestedSpecies <- function(idCountry) {
                 order by total desc
                 limit 5")
   
-  return( dbQuery(sql) )
+  result <- dbQuery(sql)
+  
+  # csv_path <- paste("csv_mode/suggestions_", idCountry, ".csv")
+  # write.csv(result, csv_path, col.names = TRUE, row.names = FALSE)
+  return( result )
   
 }
 
@@ -78,8 +122,4 @@ dbQuery.Escape <- function(param) {
   
 }
 
-dbQuery.GetConfig <- function(key, defaultValue) {
-  value <- Sys.getenv(key)
-  if(value == "") value = defaultValue
-  return(value)
-}
+

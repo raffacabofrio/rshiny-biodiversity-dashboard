@@ -25,7 +25,7 @@ source("pages/about.R")
 # ----------------------------------------------
 # GLOBAL SCOPE FOR ALL SESSIONS
 # 
-CSV_DEMO_MODE <<- as.logical( GetConfig("CSV_DEMO_MODE", "FALSE") )
+CSV_DEMO_MODE <<- as.logical( getConfig("CSV_DEMO_MODE", "FALSE") )
 COUNTRIES     <<- dbQuery.GetCountries()
 SPECIES       <<- dbQuery.GetSpecies()
 

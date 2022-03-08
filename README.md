@@ -1,4 +1,4 @@
-# APPSILON-RSHINY-TEST
+# RSHINY-BIODIVERSITY-DASHBOARD
 Biodiversity app for visualization of observed species on the map.
 
 ## PRE REQUISITES
